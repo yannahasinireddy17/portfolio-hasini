@@ -1,74 +1,71 @@
-console.log("Portfolio Loaded Successfully!");
+document.addEventListener('DOMContentLoaded', () => {
+  const hamburger = document.querySelector('.hamburger');
+  const navLinks = document.querySelector('.nav-links');
+  const topBtn = document.getElementById('topBtn');
+  const sections = document.querySelectorAll('section[id]');
+  const darkToggle = document.getElementById('darkToggle');
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM fully loaded and parsed!");
-
-  // ===== Active Navigation Highlight =====
-  const sections = document.querySelectorAll("section");
-  const navLinks = document.querySelectorAll(".nav-links a");
-
-  window.addEventListener("scroll", () => {
-    let current = "";
-    sections.forEach(section => {
-      const sectionTop = section.offsetTop - 70;
-      if (scrollY >= sectionTop) current = section.getAttribute("id");
+  // Mobile menu
+  if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('show');
+      hamburger.classList.toggle('open');
     });
+  }
 
-    navLinks.forEach(link => {
-      link.classList.remove("active");
-      if (link.getAttribute("href") === `#${current}`) {
-        link.classList.add("active");
-      }
-    });
+  // Close mobile menu on link click
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.addEventListener('click', () => navLinks.classList.remove('show'));
   });
 
-  // ===== Scroll Animations =====
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("show");
-      }
-    });
-  });
-
-  document.querySelectorAll(".section").forEach(section => {
-    section.classList.add("hidden");
-    observer.observe(section);
-  });
-
-  // ===== Back to Top Button =====
-  const topBtn = document.createElement("button");
-  topBtn.id = "topBtn";
-  topBtn.innerText = "↑";
-  document.body.appendChild(topBtn);
-
-  window.onscroll = () => {
-    if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
-      topBtn.style.display = "block";
+  // Back to top - show/hide
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+      topBtn.classList.add('show');
     } else {
-      topBtn.style.display = "none";
+      topBtn.classList.remove('show');
     }
+  });
+  topBtn?.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+  // Active link on scroll
+  const setActiveLink = () => {
+    const scrollPos = window.scrollY + 120;
+    sections.forEach(sec => {
+      const top = sec.offsetTop;
+      const height = sec.offsetHeight;
+      const id = sec.getAttribute('id');
+      const link = document.querySelector(`.nav-links a[href="#${id}"]`);
+      if (scrollPos >= top && scrollPos < top + height) {
+        link?.classList.add('active');
+      } else {
+        link?.classList.remove('active');
+      }
+    });
   };
+  window.addEventListener('scroll', setActiveLink);
+  setActiveLink();
 
-  topBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
+  // Simple reveal on scroll
+  const reveal = () => {
+    document.querySelectorAll('.section').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 80) el.classList.add('show');
+    });
+  };
+  window.addEventListener('scroll', reveal);
+  reveal();
 
-  // ===== Dark Mode Toggle =====
-  const darkToggle = document.createElement("button");
-  darkToggle.id = "darkModeToggle";
-  darkToggle.innerText = "🌙";
-  darkToggle.style.position = "fixed";
-  darkToggle.style.top = "20px";
-  darkToggle.style.right = "20px";
-  darkToggle.style.padding = "10px";
-  darkToggle.style.border = "none";
-  darkToggle.style.borderRadius = "8px";
-  darkToggle.style.cursor = "pointer";
-  darkToggle.style.zIndex = "1000";
-  document.body.appendChild(darkToggle);
+  // Dark mode toggle if exists
+  if (darkToggle) {
+    darkToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      // persist preference
+      localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
+    });
 
-  darkToggle.addEventListener("click", () => {
-    document.body.classList.toggle("dark-mode");
-  });
+    // load preference
+    const saved = localStorage.getItem('dark-mode') === 'true';
+    if (saved) document.body.classList.add('dark-mode');
+  }
 });
